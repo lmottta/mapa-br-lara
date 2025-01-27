@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa do Brasil Interativo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1565C0">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Mapa do Brasil Interativo 🎮</h1>
+        
+        <div class="controls">
+            <div class="menu-container">
+                <button id="toggleMode">🔄 Alternar Estado/Região</button>
+                <button id="playSound">🔊 Ativar Som</button>
+                <button id="installPwa" style="display: none;">📱 Instalar App</button>
+            </div>
+            <p id="currentMode">Modo atual: Estados</p>
+        </div>
+
+        <div class="game-container">
+            <div id="map-container"></div>
+            
+            <div class="legend">
+                <h2>Legendas</h2>
+                <div id="region-legend">
+                    <h3>Regiões</h3>
+                    <div id="region-items"></div>
+                </div>
+                <div id="state-legend">
+                    <h3>Estados</h3>
+                    <div id="state-items"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip" style="display: none;"></div>
+    
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('ServiceWorker registrado'))
+                .catch(error => console.log('Erro ao registrar ServiceWorker:', error));
+        }
+
+        // Lógica para instalação do PWA
+        let deferredPrompt;
+        const installButton = document.getElementById('installPwa');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'block';
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installButton.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+    </script>
+</body>
+</html>
