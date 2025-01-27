@@ -1,6 +1,7 @@
 // Configuração inicial
 let isStateMode = true;
 let isSoundEnabled = true;
+let isFullscreen = false;
 const synth = window.speechSynthesis;
 
 // Cores para as regiões
@@ -39,6 +40,42 @@ function speak(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
     synth.speak(utterance);
+}
+
+// Função para alternar tela cheia
+function toggleFullscreen() {
+    const container = document.querySelector('.container');
+    isFullscreen = !isFullscreen;
+    
+    if (isFullscreen) {
+        container.classList.add('fullscreen');
+        document.getElementById('toggleFullscreen').innerHTML = '🔳 Sair da Tela Cheia';
+    } else {
+        container.classList.remove('fullscreen');
+        document.getElementById('toggleFullscreen').innerHTML = '📺 Tela Cheia';
+    }
+    
+    // Atualiza o mapa para se ajustar ao novo tamanho
+    updateMapSize();
+}
+
+// Função para atualizar o tamanho do mapa
+function updateMapSize() {
+    const container = document.querySelector('.container');
+    const mapContainer = document.getElementById('map-container');
+    const svg = d3.select('#map-container svg');
+    
+    if (isFullscreen) {
+        const width = mapContainer.clientWidth;
+        const height = mapContainer.clientHeight;
+        svg.attr('width', width)
+           .attr('height', height)
+           .attr('viewBox', `0 0 ${width} ${height}`);
+    } else {
+        svg.attr('width', 800)
+           .attr('height', 600)
+           .attr('viewBox', '0 0 800 600');
+    }
 }
 
 // Função para criar as legendas
@@ -97,19 +134,20 @@ function hideTooltip() {
     document.getElementById('tooltip').style.display = 'none';
 }
 
-// Função para alternar entre modos
+// Event Listeners
 document.getElementById('toggleMode').addEventListener('click', () => {
     isStateMode = !isStateMode;
     document.getElementById('currentMode').textContent = `Modo atual: ${isStateMode ? 'Estados' : 'Regiões'}`;
     updateMapColors();
 });
 
-// Função para alternar som
 document.getElementById('playSound').addEventListener('click', function() {
     isSoundEnabled = !isSoundEnabled;
     this.innerHTML = isSoundEnabled ? '🔊 Ativar Som' : '🔈 Som Desativado';
     speak('Som ' + (isSoundEnabled ? 'ativado' : 'desativado'));
 });
+
+document.getElementById('toggleFullscreen').addEventListener('click', toggleFullscreen);
 
 // Função para atualizar as cores do mapa
 function updateMapColors() {
@@ -128,6 +166,29 @@ function updateMapColors() {
     createLegends();
 }
 
+// Função para adicionar rótulos aos estados
+function addStateLabels(svg, brMap, path) {
+    // Adicionar siglas dos estados
+    svg.selectAll('.state-sigla')
+        .data(brMap.features)
+        .enter()
+        .append('text')
+        .attr('class', 'state-sigla')
+        .attr('x', d => path.centroid(d)[0])
+        .attr('y', d => path.centroid(d)[1])
+        .text(d => d.properties.sigla);
+
+    // Adicionar nomes dos estados
+    svg.selectAll('.state-label')
+        .data(brMap.features)
+        .enter()
+        .append('text')
+        .attr('class', 'state-label')
+        .attr('x', d => path.centroid(d)[0])
+        .attr('y', d => path.centroid(d)[1] + 15)
+        .text(d => stateNames[d.properties.sigla]);
+}
+
 // Carregar o mapa SVG usando D3.js
 d3.json('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson')
     .then(function(brMap) {
@@ -143,6 +204,8 @@ d3.json('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master
 
         const svg = d3.select('#map-container')
             .append('svg')
+            .attr('width', width)
+            .attr('height', height)
             .attr('viewBox', `0 0 ${width} ${height}`)
             .attr('preserveAspectRatio', 'xMidYMid meet');
 
@@ -178,6 +241,11 @@ d3.json('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master
                 hideTooltip();
             });
 
+        // Adicionar rótulos aos estados
+        addStateLabels(svg, brMap, path);
         createLegends();
+
+        // Atualizar tamanho do mapa quando a janela for redimensionada
+        window.addEventListener('resize', updateMapSize);
     })
     .catch(error => console.error('Erro ao carregar o mapa:', error));

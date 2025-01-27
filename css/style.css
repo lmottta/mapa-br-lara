@@ -11,10 +11,46 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.fullscreen {
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.fullscreen .controls {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.fullscreen .game-container {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.fullscreen #map-container {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    height: calc(100vh - 100px);
+}
+
+.fullscreen .legend {
+    position: absolute;
+    right: 20px;
+    top: 100px;
+    max-height: calc(100vh - 120px);
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 100;
 }
 
 h1 {
@@ -22,6 +58,11 @@ h1 {
     margin-bottom: 20px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
     font-size: 2.5em;
+}
+
+.fullscreen h1 {
+    margin: 10px 0;
+    font-size: 1.8em;
 }
 
 .controls {
@@ -34,7 +75,7 @@ h1 {
 
 .menu-container {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
@@ -68,12 +109,7 @@ button:hover {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-@media (min-width: 1024px) {
-    .game-container {
-        flex-direction: row;
-    }
+    margin: 0 auto;
 }
 
 #map-container {
@@ -82,6 +118,7 @@ button:hover {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
 .legend {
@@ -124,7 +161,7 @@ button:hover {
 }
 
 path {
-    stroke: #fff;
+    stroke: #000;
     stroke-width: 1px;
     transition: all 0.3s;
     cursor: pointer;
@@ -133,6 +170,24 @@ path {
 path:hover {
     opacity: 0.8;
     transform: scale(1.02);
+}
+
+.state-label {
+    pointer-events: none;
+    font-size: 12px;
+    font-weight: bold;
+    text-anchor: middle;
+    fill: #000;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+}
+
+.state-sigla {
+    pointer-events: none;
+    font-size: 14px;
+    font-weight: bold;
+    text-anchor: middle;
+    fill: #000;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
 }
 
 .tooltip {
@@ -147,7 +202,7 @@ path:hover {
 }
 
 @media (max-width: 768px) {
-    .container {
+    .container:not(.fullscreen) {
         padding: 10px;
     }
     
